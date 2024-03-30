@@ -1,0 +1,118 @@
+import asyncHandler from "../middlewares/asyncHandler.js";
+import UserModel from "../models/userModel.js";
+import { cloudinaryRemoveImage, cloudinaryUploadImage } from "../utils/cloudinary.js";
+import customErrorClass from "../utils/customErrorClass.js";
+import generateToken from "../utils/generateToken.js";
+
+
+
+
+ /**---------------------------------------
+ * @desc    register user
+ * @route   /api/v1/users/register
+ * @method  POST
+ * @access  public 
+ ----------------------------------------*/
+ export const register = asyncHandler(async (req , res , next) => {
+const { name , email , password } = req.body;
+if (!name || !email || !password) {
+  return next(customErrorClass.create(`all field are required` , 400)) 
+}
+const userExist = await UserModel.findOne({ email : email});
+if (userExist) {
+  return next(customErrorClass.create(`user with this email is already exist` , 400))
+}
+
+const user = await UserModel.create({
+  name : name,
+  email : email,
+  password : password
+})
+
+if (!user) {
+  return next(customErrorClass.create(`invalid user data` , 400))
+}
+
+if (req.file) {
+  // if (user.profilePhoto.public_id !== null) {
+  //   await cloudinaryRemoveImage(user.profilePhoto.public_id);
+  // }
+  const result = await cloudinaryUploadImage(req.file.path);
+
+  user.profilePhoto = {
+    url : result.secure_url,
+    public_id : result.public_id
+  }
+
+  await user.save();
+}
+
+generateToken(res , user._id);
+
+res.status(201).json({
+  _id : user._id,
+  name : user.name,
+  email : user.email,
+  role : user.role,
+  profilePhoto : user.profilePhoto,
+  status : user.status ,
+  loggedIn : "success"
+})
+ })
+
+
+  /**---------------------------------------
+ * @desc    login user
+ * @route   /api/v1/users/login
+ * @method  POST
+ * @access  public 
+ ----------------------------------------*/
+ export const login = asyncHandler(async (req , res , next) => {
+  const { email , password } = req.body;
+if (!email || !password) {
+  return next(customErrorClass.create(`all field are required` , 400)) 
+}
+let user = await UserModel.findOne({email : email});
+if (!user) {
+  return next(customErrorClass.create(`invalid email or password` , 401))
+}
+const validPassword = await user.matchPassword(password.toString());
+if (!validPassword) {
+  return next(customErrorClass.create(`invalid email or password` , 401))  
+}
+
+generateToken(res , user._id);
+
+res.status(200).json({
+  _id : user._id,
+  name : user.name,
+  email : user.email,
+  role : user.role,
+  profilePhoto : user.profilePhoto,
+  status : user.status ,
+  loggedIn : "success"
+})
+
+ })
+
+   /**---------------------------------------
+ * @desc    get LoggedUser Profile
+ * @route   /api/v1/users/loggedUser
+ * @method  POST
+ * @access  public 
+ ----------------------------------------*/
+ export const getLoggedUserProfile = asyncHandler(async (req , res , next) => {
+  const user = await UserModel.findById(req.user._id);
+  if (!user) {
+    return next(customErrorClass.create(`user not found` , 400))  
+  }
+  res.status(200).json({
+    _id : user._id,
+    name : user.name,
+    email : user.email,
+    role : user.role,
+    profilePhoto : user.profilePhoto,
+    status : user.status ,
+    loggedIn : "success"
+  })
+ })

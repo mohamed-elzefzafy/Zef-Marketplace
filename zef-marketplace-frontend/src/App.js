@@ -1,19 +1,42 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Homepage from "./pages/home/Homepage";
-import Login from "./pages/login/Login";
-import Register from "./pages/register/Register";
+import { Container } from "react-bootstrap";
+import { Toaster } from "react-hot-toast";
+import { Outlet } from "react-router-dom";
+import Header from "./components/Header";
+
 
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <>
+<Header/>
+<Container>
+<Outlet/>
+</Container>
+      <Toaster
+  position="top-center"
+  reverseOrder={false}
+  gutter={8}
+  containerClassName=""
+  containerStyle={{}}
+  toastOptions={{
+    // Define default options
+    className: '',
+    duration: 5000,
+    style: {
+      background: '#363636',
+      color: '#fff',
+    },
+
+    // Default options for specific types
+    success: {
+      duration: 3000,
+      theme: {
+        primary: 'green',
+        secondary: 'black',
+      },
+    },
+  }}
+/>
+    </>
   );
 }
 

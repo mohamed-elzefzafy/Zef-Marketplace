@@ -1,27 +1,57 @@
 import { useState } from "react";
-import { Button, Col, Container, Form, FormGroup, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, FormGroup, Image, Row, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { useRegisterApiMutation } from "../redux/slices/userApiSlice";
+import { useDispatch } from "react-redux";
+import { loginAction } from "../redux/slices/authSlice";
+import Loader from '../components/Loader';
+import toast from "react-hot-toast";
 
-const Register = () => {
+const RegisterPage = () => {
+  const dispatch = useDispatch();
   const [validated, setValidated] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+const [registerApi , {isLoading} ] = useRegisterApiMutation();
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    const form = event.currentTarget.elements;
+    const form = e.currentTarget.elements;
 
     const name = form.name.value;
     const email = form.email.value;
     const password = form.password.value;
+    const profilePhoto = form.profilePhoto.files[0];
+
 
     if (
-      event.currentTarget.checkValidity() === true &&
+      e.currentTarget.checkValidity() === true &&
       name &&
       email &&
       password
     ) {
       console.log(name, email, password);
+      const formData = new FormData();
+      formData.append("name" , name);
+      formData.append("email" , email);
+      formData.append("password" , password);
+        formData.append("profilePhoto" , profilePhoto);
+
+    
+
+      try {
+        const res = await registerApi(formData).unwrap();
+        console.log(res?.loggedIn);
+        if (res?.loggedIn === "success") {
+          dispatch(loginAction({...res})) 
+          toast.success("you registered successfully");
+        }
+      
+        console.log(res);
+      } catch (error) {
+        
+      }
     }
 
     setValidated(true);
@@ -39,7 +69,7 @@ const Register = () => {
                 placeholder="Enter your last name"
                 name="name"
                 required
-                minLength={6}
+                minLength={2}
               />
               <Form.Control.Feedback type="invalid">
                 Please enter your name
@@ -73,12 +103,26 @@ const Register = () => {
                 Please enter your password
               </Form.Control.Feedback>
             </FormGroup>
+
+          {profileImage !== null &&   <Image src={profileImage ? URL.createObjectURL(profileImage) : null} fluid width="150px" height="150px"/>}
+
+            <FormGroup>
+              <Form.Label>Profile Image</Form.Label>
+              <Form.Control
+                type="file"
+                className="my-2"
+                name="profilePhoto"
+                onChange={(e) => setProfileImage(e.target.files[0])}
+              />
+            </FormGroup>
+
             <Button className="my-3 w-100" type="submit">
               Register
             </Button>
             <p className="text-center">
               Already have an account ? <Link to="/login">Login</Link>
             </p>
+            {isLoading &&   <Loader/>}
           </Form>
         </Col>
       </Row>
@@ -86,4 +130,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RegisterPage;

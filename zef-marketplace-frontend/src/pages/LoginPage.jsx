@@ -1,21 +1,42 @@
 import { useState } from "react";
-import { Button, Col, Container, Form, FormGroup, Row } from "react-bootstrap";
+import { Alert, Button, Col, Container, Form, FormGroup, Row, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { useLoginApiMutation } from "../redux/slices/userApiSlice";
+import { useDispatch } from "react-redux";
+import { loginAction } from "../redux/slices/authSlice";
+import Loader from "../components/Loader";
+import toast from "react-hot-toast";
 
-const Login = () => {
+const LoginPage = () => {
+  const dispatch = useDispatch();
+
   const [validated, setValidated] = useState(false);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const [loginApi , {isLoading  , error}] = useLoginApiMutation();
 
-    const form = event.currentTarget.elements;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const form = e.currentTarget.elements;
 
     const email = form.email.value;
     const password = form.password.value;
 
-    if (event.currentTarget.checkValidity() === true && email && password) {
+    if (e.currentTarget.checkValidity() === true && email && password) {
       console.log(email, password);
+      try {
+        const res = await loginApi({email , password}).unwrap();
+        console.log(res);
+        if (res?.loggedIn === "success") {
+          dispatch(loginAction({...res}))
+          console.log("you logged in successfully");
+          toast.success("you logged in successfully");
+        }
+      } catch (error) {
+        // toast.error(error?.data?.message);
+      }
+
     }
 
     setValidated(true);
@@ -59,6 +80,8 @@ const Login = () => {
             <p className="text-center">
               You don't have account ? <Link to="/register">Register</Link>
             </p>
+
+            {isLoading ?  <Loader/> : error ? (<Alert variant="danger">{error?.data?.message}</Alert>) : null  }
           </Form>
         </Col>
       </Row>
@@ -66,4 +89,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
