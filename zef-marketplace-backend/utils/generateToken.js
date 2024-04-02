@@ -10,10 +10,10 @@ const generateToken = (res , userId) => {
   res.cookie("token" , token , {
     httpOnly : true,
     secure: process.env.NODE_ENV !== "development",
-    // sameSite: 'strict',
+    sameSite: 'strict',
     maxAge : 30 * 24 * 60 * 60 * 1000,
     // secure: true,
-    sameSite: 'none',
+    // sameSite: 'none',
   }) 
 }
 

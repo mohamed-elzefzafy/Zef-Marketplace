@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, Button, Col, Container, Form, FormGroup, Row, Spinner } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLoginApiMutation } from "../redux/slices/userApiSlice";
 import { useDispatch } from "react-redux";
 import { loginAction } from "../redux/slices/authSlice";
@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [validated, setValidated] = useState(false);
 
@@ -32,6 +33,9 @@ const LoginPage = () => {
           dispatch(loginAction({...res}))
           console.log("you logged in successfully");
           toast.success("you logged in successfully");
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
         }
       } catch (error) {
         // toast.error(error?.data?.message);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Col, Container, Form, FormGroup, Image, Row, Spinner } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRegisterApiMutation } from "../redux/slices/userApiSlice";
 import { useDispatch } from "react-redux";
 import { loginAction } from "../redux/slices/authSlice";
@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 
 const RegisterPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
   const [validated, setValidated] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
 const [registerApi , {isLoading} ] = useRegisterApiMutation();
@@ -46,6 +48,9 @@ const [registerApi , {isLoading} ] = useRegisterApiMutation();
         if (res?.loggedIn === "success") {
           dispatch(loginAction({...res})) 
           toast.success("you registered successfully");
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
         }
       
         console.log(res);
