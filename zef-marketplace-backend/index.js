@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import session from "express-session";
 import { errorHandler, notFound } from "./middlewares/errorMiddleware.js";
+import bodyParser from "body-parser";
 dotenv.config({path : "./config.env"});
 const app = express();
 
@@ -15,7 +16,7 @@ app.use(express.urlencoded({ extended: true}));
 app.use(cookieParser());
 connectDb();
 app.use(express.json());
-
+app.use(bodyParser.json());
 
 // credential
 app.use(

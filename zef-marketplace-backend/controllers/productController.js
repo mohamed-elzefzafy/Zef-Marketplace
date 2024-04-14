@@ -1,6 +1,6 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import ProductModel from "../models/productModel.js"
-import { cloudinaryRemoveMultipleImage, cloudinaryUploadImage } from "../utils/cloudinary.js";
+import { cloudinaryRemoveImage, cloudinaryRemoveMultipleImage, cloudinaryUploadImage } from "../utils/cloudinary.js";
 import customErrorClass from "../utils/customErrorClass.js";
 
 
@@ -39,14 +39,38 @@ res.status(201).json({status : "success" , product});
 
   /**---------------------------------------
  * @desc    get All Products
- * @route   /api/v1/products
- * @method  POST
+ * @route   /api/v1/products/logged-seller
+ * @method  GET
  * @access  public 
  ----------------------------------------*/
- export const getAllProducts = asyncHandler(async (req , res , next) => {
-const products = await ProductModel.find({});
+ export const getAllProductsForLoggedSeller = asyncHandler(async (req , res , next) => {
+  // const {seller , categories=[] , age =[]} = req.body;
+  // let filters ={};
+  // if (seller) {
+  //   filters.seller = seller;
+  // }
+const products = await ProductModel.find({seller : req.user._id}).sort("-createdAt").populate("category" , "_id name");
   res.status(200).json(products);
    })
+
+
+  /**---------------------------------------
+ * @desc    get All Products
+ * @route   /api/v1/products/admin-get-products
+ * @method  GET
+ * @access  private 
+ ----------------------------------------*/
+ export const getAllProductsByAdmin = asyncHandler(async (req , res , next) => {
+  const {seller , categories=[] , age =[]} = req.body;
+  let filters ={};
+  if (seller) {
+    filters.seller = seller;
+  }
+const products = await ProductModel.find(filters).sort("-createdAt").populate("seller" , "_id name" ).populate("category" , "_id name");
+  res.status(200).json(products);
+   })
+
+
 
      /**---------------------------------------
  * @desc    get One Product
@@ -55,7 +79,8 @@ const products = await ProductModel.find({});
  * @access  public 
  ----------------------------------------*/
  export const getOneProduct = asyncHandler(async (req , res , next) => {
-  const product = await ProductModel.findOne({_id :req.params.id});
+  const product = await ProductModel.findOne({_id :req.params.id})
+  .populate("category" , "_id name").populate("seller" , "_id name email");
   if (!product) {
     return next(customErrorClass.create(`thers no product with this Id ${req.params.id}` , 400)) 
   }
@@ -144,3 +169,111 @@ if (product.images.length > 0) {
 
   res.status(200).json("product deleted successfully");
  })
+
+
+             /**---------------------------------------
+ * @desc    remove One Image for Admin
+ * @route   /api/v1/products/removeimage/:id
+ * @method  PUT
+ * @access  private 
+ ----------------------------------------*/
+ export const removeOneImage = asyncHandler(async (req , res) => {
+  const {publicId} = req.body;
+    let product = await ProductModel.findById(req.params.id);
+  
+    if (!product) {
+      return next(customErrorClass.create(`there's no product with id (${req.params.id})` , 400))
+  }
+  
+  
+  
+  const  imageId  = product.images.find(img =>  img.public_id === publicId);
+  if (!imageId) {
+    return next(customErrorClass.create(`this image not exists` , 400))
+  }
+  
+  product = await ProductModel.findOneAndUpdate({_id : req.params.id} ,{$pull :
+     {images : {public_id : publicId}}} , {new : true});
+  
+     await cloudinaryRemoveImage(imageId.public_id);
+  
+  res.status(200).json(product);
+   })
+  
+
+
+/**---------------------------------------
+ * @desc   update Product To Approve By Admin
+ * @route   /api/v1/products/admin-approve-product/:id
+ * @method  PUT
+ * @access  private  admin
+ ----------------------------------------*/
+ export const toggleupdateProductStatusByAdmin = asyncHandler(async (req , res) => {
+    let product = await ProductModel.findById(req.params.id);
+  
+    if (!product) {
+      return next(customErrorClass.create(`there's no product with id (${req.params.id})` , 400))
+  }
+if (product.status === "approved") {
+  product.status = "pending";
+} else if (product.status === "pending")
+{
+  product.status = "approved";
+}
+
+
+ await product.save();
+
+ res.status(200).json(product);
+ })
+
+
+
+
+  /**---------------------------------------
+ * @desc    get products
+ * @route   /api/v1/products
+ * @method  POST
+ * @access  public 
+ ----------------------------------------*/
+ export const getAllProducts = asyncHandler(async (req , res) => {
+  const {  category = [], age = [], status  , keyWord} = req.body  ;
+  console.log(  category , age  , status  , keyWord);
+  let  query = {};
+
+  if (status === "pending" || status === "approved") {
+    query.status = status;
+  }
+
+  // filter by category
+  if (category.length > 0) {
+    query.category = { $in: category };
+  }
+    // filter by age
+    if ( age.length > 0) {
+      age.forEach((item) => {
+        const fromAge = +item.split("-")[0];
+        const toAge = +item.split("-")[1];
+      if (toAge >= 10) {
+        query.age = { $gte: fromAge};
+      } else {
+        query.age = { $gte: fromAge, $lte: toAge };
+      }
+      });
+    }
+
+    // Add a keyword filter if provided
+    if ( keyWord !== undefined) {
+      query.name = { $regex: keyWord, $options: 'i' };
+    }
+
+  console.log(query);
+  const pageSize = 10;
+  const page = Number(req.query.pageNumber) || 1;
+  const count = await ProductModel.countDocuments(query);
+
+  const products = await ProductModel.find(query).limit(pageSize).skip(pageSize * (page - 1)).populate("category" , "_id name");
+  res.status(200).json({products , page , pages : Math.ceil(count / pageSize) });
+
+   })
+  

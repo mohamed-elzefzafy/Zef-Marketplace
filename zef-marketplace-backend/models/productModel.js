@@ -15,8 +15,9 @@ const ProductSchema = new mongoose.Schema({
     required: true,
   },
   category : {
-    type: String,
-    required: true,
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "Category",
+    required : true,
   },
   age : {
     type: Number,
@@ -50,7 +51,7 @@ const ProductSchema = new mongoose.Schema({
   },
   status : {
   type: String,
-  enum :["pending", "allow"],
+  enum :["pending", "approved"],
   default : "pending",
   required: true,
   }

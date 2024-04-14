@@ -3,8 +3,11 @@ import { Alert, Button, Col, Form , FormGroup, Image, Modal, Row } from "react-b
 import { useAddProductMutation, useGetAllProductsQuery } from "../../redux/slices/productsApiSlice";
 import Loader from '../Loader';
 import toast from "react-hot-toast";
+import { useGetCategoriesQuery } from "../../redux/slices/categoryApiSlice";
 
-const AddProductModal = ({ showProductForm, setshowProductForm }) => {
+const AddProductModal = ({refetchAllProducts , showProductForm, setshowProductForm }) => {
+const {data : categories} = useGetCategoriesQuery();
+
   const [validated, setValidated] = useState(false);
   const [images, setImages] = useState([]);
   const [imageErrorMessage, setImageErrorMessage] = useState("");
@@ -65,6 +68,7 @@ console.log(name , description ,  price , category , age ,
  console.log(res);
  if (res.status ===  "success") {
   toast.success("product created successfully");
+  refetchAllProducts();
   setshowProductForm(false);
  }
       } catch (error) {
@@ -166,8 +170,9 @@ console.log(name , description ,  price , category , age ,
               name="category"
                style={{ marginTop: -6 }}>
                 <option value="">Select</option> 
-                <option value="1">1</option>
-                <option value="2">2</option>
+                       {categories?.map(category => 
+                       <option value={category?._id}>{category.name}</option> )
+                       }
               </Form.Select>
             </Col>
           </Row>

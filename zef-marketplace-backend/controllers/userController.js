@@ -95,6 +95,15 @@ res.status(200).json({
 
  })
 
+ export const logout = asyncHandler(async (req , res) => {
+  res.cookie("token" , "" , {
+   httpOnly : true,
+   expires : new Date(0),
+  })
+
+  res.status(200).json({message : "logged out successfully"});
+})
+
    /**---------------------------------------
  * @desc    get LoggedUser Profile
  * @route   /api/v1/users/loggedUser
@@ -116,3 +125,81 @@ res.status(200).json({
     loggedIn : "success"
   })
  })
+
+
+    /**---------------------------------------
+ * @desc    get One User By Admin
+ * @route   /api/v1/users/get-one-user/:id
+ * @method  POST
+ * @access  public 
+ ----------------------------------------*/
+ export const getOneUserByAdmin = asyncHandler(async (req , res , next) => {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) {
+    return next(customErrorClass.create(`user not found` , 400))  
+  }
+
+  res.status(200).json({
+    _id : user._id,
+    name : user.name,
+    email : user.email,
+    role : user.role,
+    profilePhoto : user.profilePhoto,
+    status : user.status ,
+    loggedIn : "success"
+  })
+ })
+
+     /**---------------------------------------
+ * @desc    get All User
+ * @route   /api/v1/users
+ * @method  POST
+ * @access  public 
+ ----------------------------------------*/
+ export const getAllUsers = asyncHandler(async (req , res , next) => {
+  const users = await UserModel.find({}).sort("role");
+  res.status(200).json(users);
+ })
+
+
+     /**---------------------------------------
+ * @desc    toggle update User Status By Admin
+ * @route   /api/v1/users/toggle-update-user-status/:id
+ * @method  put
+ * @access  public 
+ ----------------------------------------*/
+ export const toggleupdateUserStatusByAdmin = asyncHandler(async (req , res , next) => {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) {
+    return next(customErrorClass.create(`user not found` , 400))  
+  }
+
+if (user.status === "active") {
+user.status = "blocked";
+} else if (user.status === "blocked")
+{
+  user.status = "active";
+}
+
+
+await user.save();
+
+res.status(200).json(user);
+})
+
+
+     /**---------------------------------------
+ * @desc    delete User
+ * @route   /api/v1/users/delete-user
+ * @method  Delete
+ * @access  private 
+ ----------------------------------------*/
+ export const deleteUser = asyncHandler(async (req , res , next) => {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) {
+    return next(customErrorClass.create(`user not found` , 400))  
+  }
+await user.deleteOne();
+res.status(200).json("user deleted succefully");
+
+})

@@ -1,8 +1,9 @@
 import axios from "axios";
+import { baseUrl } from "./baseUrl";
 
  const request = axios.create({
-  // baseURL : "http://localhost:8000"
-  baseURL : "https://zef-blog.onrender.com"
+  baseURL : baseUrl,
+  withCredentials : true,
 })
 
 

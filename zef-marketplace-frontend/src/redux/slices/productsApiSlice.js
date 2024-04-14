@@ -10,9 +10,16 @@ export const productsApiSlice = apiSlice.injectEndpoints({
       body : data,
       })
     }),
-    getAllProducts : builder.query({
+    getAllProductsLoggedSeller : builder.query({
       query : () => ({
-        url : `/api/v1/products`,
+        url : `/api/v1/products/logged-seller`,
+      }),
+      keepUnusedDataFor : 5,
+      providesTags: ["Products"]
+    }),
+    getAllProductsByAdmin : builder.query({
+      query : () => ({
+        url : `/api/v1/products/admin-get-product`,
       }),
       keepUnusedDataFor : 5,
       providesTags: ["Products"]
@@ -21,20 +28,32 @@ export const productsApiSlice = apiSlice.injectEndpoints({
       query : (id) => ({
         url : `/api/v1/products/get-one-product/${id}`,
       }),
-      // keepUnusedDataFor : 5,
-      // providesTags: ["Products"]
+      keepUnusedDataFor : 5,
+      providesTags: ["Products"]
     }),
     updateProduct : builder.mutation({
-      query : (data) => ({
-        url : `/api/v1/products/get-one-product/${data.id}`,
+      query : ({productId ,data}) => ({
+        url : `/api/v1/products/update-product/${productId}`,
         method : "PUT",
         body : data,
       }),
     }),
     deleteProduct : builder.mutation({
-      query : (data) => ({
-        url : `/api/v1/products/delete-product/${data.id}`,
+      query : (id) => ({
+        url : `/api/v1/products/delete-product/${id}`,
         method : "DELETE",
+      }),
+    }),
+    adminUpdateProductStatus : builder.mutation({
+      query : (id) => ({
+        url : `/api/v1/products/admin-toggle-product-status/${id}`,
+        method : "PUT",
+      }),
+    }),
+    getProductWithFilters : builder.mutation({
+      query : (data) => ({
+        url : `/api/v1/products?pageNumber=${data.page}`,
+        method : "POST",
         body : data,
       }),
     }),
@@ -43,5 +62,6 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 
 
 
-export const {useAddProductMutation , useGetAllProductsQuery , useGetOneProductQuery ,
-useUpdateProductMutation , useDeleteProductMutation } = productsApiSlice;
+export const {useAddProductMutation , useGetAllProductsLoggedSellerQuery , useGetOneProductQuery ,
+useUpdateProductMutation , useDeleteProductMutation , useGetAllProductsByAdminQuery ,
+ useAdminUpdateProductStatusMutation , useGetProductWithFiltersMutation } = productsApiSlice;
