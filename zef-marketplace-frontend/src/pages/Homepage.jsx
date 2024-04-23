@@ -18,24 +18,8 @@ const Homepage = () => {
   const [keyWordSearch, setKeyWordSearch] = useState("");
 
   const [getProductWithFilters] = useGetProductWithFiltersMutation();
-console.log(categoryFilter);
-console.log(ageFilter);
 const {page} = useParams();
 
-
-  // useEffect(() => {
-  //   ((
-  //     async() => {
-  //       const {data} = await request.post(`/api/v1/products?pageNumber=${page}`,
-  //        {category : categoryFilter ,
-  //          keyWord : keyWordSearch,
-  //          age : ageFilter,
-  //          status : "approved"} );
-  //       setProducts(data);
-  //       console.log(data?.pages);
-  //     }
-  //   )())
-  // },[page , categoryFilter , keyWordSearch , ageFilter]);
 
   
   useEffect(() => {
@@ -51,7 +35,6 @@ const {page} = useParams();
     })
     setProducts(data);
   } catch (error) {
-    console.log(error);
   }
       }
     )())
@@ -66,7 +49,6 @@ setCategoryFilter(prev => prev.filter(c => c !== categoryId))
     }else {
       setCategoryFilter(prev => [...prev , categoryId]);
     }
-    console.log(categoryFilter);
   }
 
 
@@ -76,7 +58,6 @@ setCategoryFilter(prev => prev.filter(c => c !== categoryId))
     }else {
       setAgeFilter(prev => [...prev , age]);
     }
-    console.log(ageFilter);
   }
 
 

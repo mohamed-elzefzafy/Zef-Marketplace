@@ -1,6 +1,7 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
+import ProductModel from "../models/productModel.js";
 import UserModel from "../models/userModel.js";
-import { cloudinaryRemoveImage, cloudinaryUploadImage } from "../utils/cloudinary.js";
+import { cloudinaryRemoveImage, cloudinaryRemoveMultipleImage, cloudinaryUploadImage } from "../utils/cloudinary.js";
 import customErrorClass from "../utils/customErrorClass.js";
 import generateToken from "../utils/generateToken.js";
 
@@ -199,6 +200,21 @@ res.status(200).json(user);
   if (!user) {
     return next(customErrorClass.create(`user not found` , 400))  
   }
+
+let products =   await ProductModel.find({seller : user});
+for (let i = 0 ; products.length > i;  i++ ){
+  if (products[i].images.length > 0) {
+    // Get the public ids from the images
+      const public_ids = products[i].images?.map((image) => image.public_id)
+    //  Delete all  images from cloudinary that belong to this product
+    if (public_ids?.length > 0) {
+      await cloudinaryRemoveMultipleImage(public_ids)
+    }
+}
+
+};  
+
+   await ProductModel.deleteMany({seller : user});
 await user.deleteOne();
 res.status(200).json("user deleted succefully");
 

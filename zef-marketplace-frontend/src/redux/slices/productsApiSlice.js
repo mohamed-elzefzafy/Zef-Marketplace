@@ -44,6 +44,12 @@ export const productsApiSlice = apiSlice.injectEndpoints({
         method : "DELETE",
       }),
     }),
+    deleteProductBySeller : builder.mutation({
+      query : (id) => ({
+        url : `/api/v1/products/delete-product-by-seller/${id}`,
+        method : "DELETE",
+      }),
+    }),
     adminUpdateProductStatus : builder.mutation({
       query : (id) => ({
         url : `/api/v1/products/admin-toggle-product-status/${id}`,
@@ -64,4 +70,4 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 
 export const {useAddProductMutation , useGetAllProductsLoggedSellerQuery , useGetOneProductQuery ,
 useUpdateProductMutation , useDeleteProductMutation , useGetAllProductsByAdminQuery ,
- useAdminUpdateProductStatusMutation , useGetProductWithFiltersMutation } = productsApiSlice;
+ useAdminUpdateProductStatusMutation , useGetProductWithFiltersMutation , useDeleteProductBySellerMutation } = productsApiSlice;

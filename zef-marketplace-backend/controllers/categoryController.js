@@ -102,9 +102,7 @@ if (req.file) {
   const productsForCategory = await ProductModel.find({category : req.params.categoryId});
 // const publicIds = productsForCategory.map(product => product.images.public_id);
 // let publicIds = [];
-console.log(productsForCategory);
 let publicIds = productsForCategory.map(product => product.images.map(image => image.public_id))
-console.log(publicIds);
 
 if (publicIds?.length > 0) {
   for(let i = 0; i< publicIds.length ; i++)

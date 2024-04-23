@@ -64,59 +64,6 @@ setImages(images => images.filter((image) => image !== images[index]));
     setImages(Array.from(e.target.files));
   };
 
-//   const handleSubmit = async(e) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-
-
-//     const form = e.currentTarget.elements;
-
-//     const name = form.name.value;
-//     const description = form.description.value;
-//     const price = form.price.value;
-//     const category = form.category.value;
-//     const age = form.age.value;
-//     const billAvailable = form.billAvailable.checked;
-//     const warrantyAvailable = form.warrantyAvailable.checked;
-//     const accessoriesAvailable = form.accessoriesAvailable.checked;
-//     const boxAvailable = form.boxAvailable.checked;
-
-// console.log(name , description ,  price , category , age , 
-//   billAvailable , warrantyAvailable , accessoriesAvailable , boxAvailable);
-
-
-//     if (
-//       e.currentTarget.checkValidity() === true  ) {
-//         console.log("from f");
-//       const formData = new FormData();
-//       formData.append("name" , name);
-//       formData.append("description" , description);
-//       formData.append("price" , price);
-//       formData.append("category" , category);
-//       formData.append("age" , age);
-//       formData.append("billAvailable" , billAvailable);
-//       formData.append("warrantyAvailable" , warrantyAvailable);
-//       formData.append("accessoriesAvailable" , accessoriesAvailable);
-//       formData.append("boxAvailable" , boxAvailable);
-//       for (let i = 0; i < images.length; i++) {
-//         formData.append("images", images[i]);
-//       }
-  
-//       try {
-//  const res = await updateProduct(formData).unwrap();
-//  console.log(res);
-//  if (res.status ===  "success") {
-//   toast.success("product updated successfully");
-//   setshowEditProductForm(false);
-//  }
-//       } catch (error) {
-//         toast.error(error?.data?.message)
-//       }
-//     }
-
-//     setValidated(true);
-//   };
-
 
 const handleSubmit = async(e) => {
   e.preventDefault();
@@ -150,16 +97,12 @@ const handleSubmit = async(e) => {
   // const res =  await updateProduct({productId, formData}).unwrap();
   const res = await request.put(`/api/v1/products/update-product/${productId}` , formData);
  refetchAllProducts();
-  console.log(res);
   if (res?.data?.status === "success") {
     toast.success("product updated successfully");
     setshowEditProductForm(false);
    }
-  console.log(productId);
   } catch (error) {
-    console.log(error);
   }
-console.log(name , description , price , age , billAvailable , warrantyAvailable , accessoriesAvailable , boxAvailable);
 
 }
 
@@ -169,7 +112,6 @@ const deleteProductOneImageHandler = async (productId , publicId) => {
     await request.put(`/api/v1/products/removeimage/${productId}` , {publicId});
     refetchOneProduct();
   } catch (error) {
-    console.log(error);
   }
   };
 

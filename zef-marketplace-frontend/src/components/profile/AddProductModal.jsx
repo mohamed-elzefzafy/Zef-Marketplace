@@ -41,14 +41,9 @@ setImages(images => images.filter((image) => image !== images[index]));
     const accessoriesAvailable = form.accessoriesAvailable.checked;
     const boxAvailable = form.boxAvailable.checked;
 
-console.log(name , description ,  price , category , age , 
-  billAvailable , warrantyAvailable , accessoriesAvailable , boxAvailable);
-
-
     if (
       e.currentTarget.checkValidity() === true &&
       name && description &&  price && category && age ) {
-        console.log("from f");
       const formData = new FormData();
       formData.append("name" , name);
       formData.append("description" , description);
@@ -65,7 +60,6 @@ console.log(name , description ,  price , category , age ,
   
       try {
  const res = await addProduct(formData).unwrap();
- console.log(res);
  if (res.status ===  "success") {
   toast.success("product created successfully");
   refetchAllProducts();

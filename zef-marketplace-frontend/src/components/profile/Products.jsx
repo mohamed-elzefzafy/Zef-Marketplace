@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { Alert, Button, Col, Image, Row, Table } from 'react-bootstrap'
-import { useDeleteProductMutation, useGetAllProductsLoggedSellerQuery } from '../../redux/slices/productsApiSlice';
+import { useDeleteProductBySellerMutation, useGetAllProductsLoggedSellerQuery } from '../../redux/slices/productsApiSlice';
 import Loader from '../Loader';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import toast from 'react-hot-toast';
 import swal from 'sweetalert';
+import { useNavigate } from 'react-router-dom';
 
 const Products = () => {
+  const navigate = useNavigate();
   const [showProductForm, setshowProductForm] = useState(false);
   const [showEditProductForm, setshowEditProductForm] = useState(false);
   const [productId, setProductId] = useState(null)
   const {data : products , refetch : refetchAllProducts ,  isLoading ,error} = useGetAllProductsLoggedSellerQuery();
-  const [deleteProduct] = useDeleteProductMutation();
+  const [deleteProductBySeller] = useDeleteProductBySellerMutation();
 
   const showEditProduct = (id) => {
     setProductId(id)
@@ -32,7 +34,7 @@ try {
   })
   .then(async(willDelete) => {
     if (willDelete) {
-      const res = await deleteProduct(productId).unwrap();
+      const res = await deleteProductBySeller(productId).unwrap();
       if (res === "product deleted successfully") {
         toast.success("product deleted successfully");
         refetchAllProducts();
@@ -45,7 +47,6 @@ try {
 
 } catch (error) {
   // toast.error()
-  console.log(error);
 }
     }
 
@@ -83,7 +84,8 @@ isLoading ?<Loader/> : error ? <Alert>{error?.data?.message}</Alert> :
 products?.map((product , index) => 
   <tr key={product?._id}>
       <td>{index + 1}</td>
-      <td>{product?.name} {" "}<Image src={product?.images[0]?.url} fluid width={30} height={30}/> </td>
+      <td onClick={() => navigate(`/products/${product?._id}`)} style={{cursor : "pointer"}}>
+      {product?.name} {" "}<Image src={product?.images[0]?.url} fluid width={30} height={30}/> </td>
       <td>{product?.description}</td>
       <td>$ {product?.price}</td>
       <td>{product?.category?.name}</td>

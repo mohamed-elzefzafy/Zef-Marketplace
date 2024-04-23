@@ -1,24 +1,35 @@
 import React from "react";
-import { Container, Image, Nav, NavDropdown, Navbar } from "react-bootstrap";
+import { Badge, Container, Image, Nav, NavDropdown, Navbar } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { useLogoutMutation } from "../redux/slices/userApiSlice";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useGetUserNotificationsQuery, useUpdateNotificationToReadMutation } from "../redux/slices/notificationApiCall";
 
 const Header = () => {
   const navigate = useNavigate();
   const {userInfo} = useSelector(state => state.auth)
   const [logout] = useLogoutMutation();
+const {data  : notifications  , refetch , isLoading : notificationsLoading} = useGetUserNotificationsQuery();
+const [updateNotificationToRead] = useUpdateNotificationToReadMutation();
+
   const logoutHandler = async() => {
     try {
       const res = await logout().unwrap();
-      console.log(res);
       if (res.message === "logged out successfully") {
         localStorage.clear();
         window.location.href = "/login";
       }
     } catch (error) {
-      console.log(error);
+    }
+  };
+
+  const onGetNotification = async(id , productsId) => {
+    try {
+      await updateNotificationToRead(id).unwrap();
+      refetch();
+    } catch (error) {
+      
     }
   };
   return (
@@ -82,6 +93,32 @@ const Header = () => {
                 </LinkContainer>
               </>
   }
+
+
+  <NavDropdown className="ms-2 me-5 hide-arrow" 
+  title={<i className="bi bi-bell-fill fs-5">
+   {notifications && notifications?.length > 0 && <Badge bg="danger" className="rounded-circle ms-1">
+   {notifications?.length}</Badge>} </i>} 
+  id="adminmenue"  >
+              
+                   {
+                    notifications?.length > 0  ?
+                     (
+                      notifications?.map(notifications => 
+                   <LinkContainer to={notifications?.title === "New Product added" ? `/admin`  :`/products/${notifications?.product}`}>
+                    <NavDropdown.Item onClick={() => onGetNotification(notifications?._id , notifications?.product)}>
+                    {notifications?.title}
+                  </NavDropdown.Item>
+                  </LinkContainer>
+                   )
+                     ) 
+                     :
+                      (
+                        <NavDropdown.Item>You don't have notifications</NavDropdown.Item>
+                      )
+              
+                   }
+                </NavDropdown>
             </Nav>
           </Navbar.Collapse>
         </Container>

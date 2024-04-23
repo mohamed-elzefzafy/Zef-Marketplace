@@ -25,13 +25,10 @@ const LoginPage = () => {
     const password = form.password.value;
 
     if (e.currentTarget.checkValidity() === true && email && password) {
-      console.log(email, password);
       try {
         const res = await loginApi({email , password}).unwrap();
-        console.log(res);
         if (res?.loggedIn === "success") {
           dispatch(loginAction({...res}))
-          console.log("you logged in successfully");
           toast.success("you logged in successfully");
           setTimeout(() => {
             navigate("/");

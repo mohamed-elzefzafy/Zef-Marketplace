@@ -33,7 +33,6 @@ const [registerApi , {isLoading} ] = useRegisterApiMutation();
       email &&
       password
     ) {
-      console.log(name, email, password);
       const formData = new FormData();
       formData.append("name" , name);
       formData.append("email" , email);
@@ -44,18 +43,16 @@ const [registerApi , {isLoading} ] = useRegisterApiMutation();
 
       try {
         const res = await registerApi(formData).unwrap();
-        console.log(res?.loggedIn);
         if (res?.loggedIn === "success") {
           dispatch(loginAction({...res})) 
           toast.success("you registered successfully");
           setTimeout(() => {
             navigate("/");
           }, 2000);
-        }
+        } 
       
-        console.log(res);
       } catch (error) {
-        
+        toast.error(error?.data?.message)
       }
     }
 

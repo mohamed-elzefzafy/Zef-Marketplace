@@ -44,7 +44,6 @@ try {
 
 } catch (error) {
   // toast.error()
-  console.log(error);
 }
     }
 
@@ -53,7 +52,6 @@ try {
   await adminUpdateProductStatus(id).unwrap();
   refetchAllProducts();
 } catch (error) {
-  console.log(error);
 }
     }
 

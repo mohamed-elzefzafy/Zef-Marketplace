@@ -1,5 +1,8 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
+import BidModel from "../models/bidModel.js";
+import NotificationModel from "../models/notificationModel.js";
 import ProductModel from "../models/productModel.js"
+import UserModel from "../models/userModel.js";
 import { cloudinaryRemoveImage, cloudinaryRemoveMultipleImage, cloudinaryUploadImage } from "../utils/cloudinary.js";
 import customErrorClass from "../utils/customErrorClass.js";
 
@@ -33,6 +36,18 @@ product.images = resultsObjectsArray ;
 }
 
 await product.save();
+
+const admins = await UserModel.find({role : 'admin'});
+admins.forEach(async(admin) => {
+  const adminNotification =  new NotificationModel({
+    title : "New Product added",
+    message : `new product has added`,
+    user : admin._id,
+    product : product._id,
+   })
+   await adminNotification.save();
+});
+
 
 res.status(201).json({status : "success" , product});
  })
@@ -149,7 +164,7 @@ if (req.files && req.files.length > 0) {
  * @method  DELETE
  * @access  private 
  ----------------------------------------*/
- export const deleteProduct = asyncHandler(async (req , res , next) => {
+ export const deleteProductByAdmin = asyncHandler(async (req , res , next) => {
   let product = await ProductModel.findById(req.params.id);
   if (!product) {
     return next(customErrorClass.create(`there's no product with id (${req.params.id})` , 400))
@@ -167,9 +182,50 @@ if (product.images.length > 0) {
 
   product = await ProductModel.findByIdAndDelete(req.params.id);
 
+  const userNotification =  new NotificationModel({
+    title : "your product deleted",
+    message : `your product has deleted`,
+    user : product.seller,
+    product : product._id,
+   });
+
+await userNotification.save();
+
   res.status(200).json("product deleted successfully");
  })
 
+
+        /**---------------------------------------
+ * @desc    delete Product by seller
+ * @route   /api/v1/products/delete-product/:id
+ * @method  DELETE
+ * @access  private 
+ ----------------------------------------*/
+ export const deleteProductBySeller = asyncHandler(async (req , res , next) => {
+  let product = await ProductModel.findById(req.params.id);
+  if (!product) {
+    return next(customErrorClass.create(`there's no product with id (${req.params.id})` , 400))
+  }
+
+  if (product.seller.toString() !== req.user._id.toString()) {
+    return next(customErrorClass.create(`you can't delete product belong to another seller` , 400))
+  }
+
+ await BidModel.deleteMany({product : product});
+
+  if (product.images.length > 0) {
+    // Get the public ids from the images
+      const public_ids = product.images?.map((image) => image.public_id)
+    //  Delete all  images from cloudinary that belong to this product
+    if (public_ids?.length > 0) {
+      await cloudinaryRemoveMultipleImage(public_ids)
+    }
+}
+
+product = await ProductModel.findByIdAndDelete(req.params.id);
+
+res.status(200).json("product deleted successfully");
+ });
 
              /**---------------------------------------
  * @desc    remove One Image for Admin
@@ -216,9 +272,28 @@ if (product.images.length > 0) {
   }
 if (product.status === "approved") {
   product.status = "pending";
+
+  const userNotification =  new NotificationModel({
+    title : "your product pended",
+    message : `your product has pending`,
+    user : product.seller,
+    product : product._id,
+   });
+  
+  await userNotification.save();
+
 } else if (product.status === "pending")
 {
   product.status = "approved";
+
+  const userNotification =  new NotificationModel({
+    title : "your product approved",
+    message : `your product has approved`,
+    user : product.seller,
+    product : product._id,
+   });
+  
+  await userNotification.save();
 }
 
 
@@ -238,7 +313,6 @@ if (product.status === "approved") {
  ----------------------------------------*/
  export const getAllProducts = asyncHandler(async (req , res) => {
   const {  category = [], age = [], status  , keyWord} = req.body  ;
-  console.log(  category , age  , status  , keyWord);
   let  query = {};
 
   if (status === "pending" || status === "approved") {
@@ -267,7 +341,6 @@ if (product.status === "approved") {
       query.name = { $regex: keyWord, $options: 'i' };
     }
 
-  console.log(query);
   const pageSize = 10;
   const page = Number(req.query.pageNumber) || 1;
   const count = await ProductModel.countDocuments(query);

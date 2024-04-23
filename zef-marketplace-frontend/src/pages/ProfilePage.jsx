@@ -1,5 +1,7 @@
 import { Tab, Tabs } from "react-bootstrap"
 import Products from "../components/profile/Products"
+import Bids from "../components/profile/Bids"
+import RecivedBids from "../components/profile/RecivedBids"
 
 
 const ProfilePage = () => {
@@ -14,8 +16,13 @@ const ProfilePage = () => {
     <Products/>
     </Tab>
     <Tab eventKey="Bids" title="Bids" className="mb-3 fw-semibold">
-      Tab content for Profile
+    <Bids/>
     </Tab>
+
+    <Tab eventKey="My-Recived-Bids" title="My Recived Bids" className="mb-3 fw-semibold">
+    <RecivedBids/>
+    </Tab>
+
     <Tab eventKey="General" title="General" className="mb-3 fw-semibold">
     </Tab>
   </Tabs>
